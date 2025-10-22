@@ -31,6 +31,12 @@ jobs:
         path: kubernetes
         token: ${{ secrets.GIT_HUB_TOKEN }}
         github-server-url: https://github.com
+    - name: Login to registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ vars.REGISTRY }}
+        username: ${{ vars.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_TOKEN }}
     - name: Build Kubernetes images
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
@@ -40,12 +46,6 @@ jobs:
         KUBE_GIT_VERSION: ${{ inputs.version }}
         KUBE_RELEASE_RUN_TESTS: n
         KUBE_DOCKER_REGISTRY: ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}
-    - name: Login to registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ vars.REGISTRY }}
-        username: ${{ vars.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_TOKEN }}
     - name: Push images
       run: |
         docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-apiserver-amd64:${{ inputs.version }}
