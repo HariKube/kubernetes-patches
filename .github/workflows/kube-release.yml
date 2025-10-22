@@ -6,7 +6,7 @@ on:
     - main
 
 concurrency: 
-  group: ${{ github.head_ref }}
+  group: ${{ github.ref_name }}-release
   cancel-in-progress: true
 
 permissions:
