@@ -5,6 +5,13 @@ on:
     branches:
     - main
 
+workflow_call:
+    inputs:
+      version:
+        description: 'Kubernetes version'
+        required: true
+        type: string
+
 concurrency: 
   group: ${{ github.ref_name }}-release
   cancel-in-progress: true
@@ -17,25 +24,6 @@ env:
   
 jobs:
   release-kubernetes:
-    strategy:
-      matrix:
-        version:
-        - v1.33.0
-        - v1.33.1
-        - v1.33.2
-        - v1.33.3
-        - v1.33.4
-        - v1.33.5
-        - v1.34.0
-        - v1.34.1
-    if: |
-      contains(github.event.head_commit.message, '+KR-v1.33.0') ||
-      contains(github.event.head_commit.message, '+KR-v1.33.2') ||
-      contains(github.event.head_commit.message, '+KR-v1.33.3') ||
-      contains(github.event.head_commit.message, '+KR-v1.33.4') ||
-      contains(github.event.head_commit.message, '+KR-v1.33.5') ||
-      contains(github.event.head_commit.message, '+KR-v1.34.0') ||
-      contains(github.event.head_commit.message, '+KR-v1.34.1')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -45,17 +33,17 @@ jobs:
     - uses: actions/checkout@v4
       with:
         repository: kubernetes/kubernetes
-        ref: ${{ matrix.version }}
+        ref: ${{ inputs.version }}
         path: kubernetes
         token: ${{ secrets.GIT_HUB_TOKEN }}
         github-server-url: https://github.com
     - name: Build Kubernetes images
       run: |
-        (cd kubernetes ; git apply ${{ github.workspace }}/kine/docs/patches/kubernetes-${{ matrix.version }}.patch)
+        (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
         make -C kubernetes release-images
       env:
         KUBE_GIT_TREE_STATE: clean
-        KUBE_GIT_VERSION: ${{ matrix.version }}
+        KUBE_GIT_VERSION: ${{ inputs.version }}
         KUBE_RELEASE_RUN_TESTS: n
         KUBE_DOCKER_REGISTRY: ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}
     - name: Login to registry
@@ -66,21 +54,11 @@ jobs:
         password: ${{ secrets.REGISTRY_TOKEN }}
     - name: Push images
       run: |
-        docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-amd64:${{ matrix.version }}
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-ppc64le:${{ matrix.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-s390x:${{ matrix.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-arm64:${{ matrix.version }} ||:
-        docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-amd64:${{ matrix.version }}
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-ppc64le:${{ matrix.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-s390x:${{ matrix.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-arm64:${{ matrix.version }} ||:
-    - name: Delete images
-      run: |
-        docker rmi ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-amd64:${{ matrix.version }}
-        [[ $KUBE_FASTBUILD = false ]] && docker rmi ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-ppc64le:${{ matrix.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker rmi ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-s390x:${{ matrix.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker rmi ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-arm64:${{ matrix.version }} ||:
-        docker rmi ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-amd64:${{ matrix.version }}
-        [[ $KUBE_FASTBUILD = false ]] && docker rmi ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-ppc64le:${{ matrix.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker rmi ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-s390x:${{ matrix.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker rmi ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-arm64:${{ matrix.version }} ||:
+        docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-amd64:${{ inputs.version }}
+        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-ppc64le:${{ inputs.version }} ||:
+        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-s390x:${{ inputs.version }} ||:
+        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-apiserver-arm64:${{ inputs.version }} ||:
+        docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-amd64:${{ inputs.version }}
+        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-ppc64le:${{ inputs.version }} ||:
+        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-s390x:${{ inputs.version }} ||:
+        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REGISTRY_USER }}/kube-controller-manager-arm64:${{ inputs.version }} ||:
