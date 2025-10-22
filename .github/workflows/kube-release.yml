@@ -46,13 +46,14 @@ jobs:
         registry: ${{ vars.REGISTRY }}
         username: ${{ vars.REGISTRY_USER }}
         password: ${{ secrets.REGISTRY_TOKEN }}
-    - name: Build Kubernetes images
+    - name: Patch Kubernetes
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
-        sed -i 's/kube::util::host_arch)/echo ${{ matrix.arch }}/' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
+        sed -i 's/kube::util::host_arch/echo ${{ matrix.arch }}/' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
         sed -i 's/WHAT="${CMD_TARGETS}"/WHAT="cmd/${{ matrix.what }}"/' ${{ github.workspace }}/kubernetes/build/release-images.sh
         sed -i 's/KUBE_BUILD_PLATFORMS="${KUBE_SERVER_PLATFORMS[*]}"/KUBE_BUILD_PLATFORMS="${{ matrix.arch }}"/' ${{ github.workspace }}/kubernetes/build/release-images.sh
-        make -C kubernetes release-images
+    - name: Build Kubernetes images
+      run: make -C kubernetes release-images
       env:
         KUBE_FASTBUILD: "true"
         KUBE_GIT_TREE_STATE: clean
