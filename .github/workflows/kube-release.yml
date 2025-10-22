@@ -47,8 +47,8 @@ jobs:
     - name: Build Kubernetes images
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
-        sed -i 's/WHAT="${CMD_TARGETS}"/WHAT="${WHAT}"' ${{ github.workspace }}/kubernetes/build/release-images.sh
-        sed -i 's/KUBE_BUILD_PLATFORMS="${KUBE_SERVER_PLATFORMS[*]}"/KUBE_BUILD_PLATFORMS="${ARCH}"' ${{ github.workspace }}/kubernetes/build/release-images.sh
+        sed -i 's/WHAT="${CMD_TARGETS}"/WHAT="${WHAT}"/' ${{ github.workspace }}/kubernetes/build/release-images.sh
+        sed -i 's/KUBE_BUILD_PLATFORMS="${KUBE_SERVER_PLATFORMS[*]}"/KUBE_BUILD_PLATFORMS="${ARCH}"/' ${{ github.workspace }}/kubernetes/build/release-images.sh
         make -C kubernetes release-images
       env:
         KUBE_FASTBUILD: "false"
