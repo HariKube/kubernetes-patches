@@ -7,6 +7,11 @@ on:
         description: 'Kubernetes version'
         required: true
         type: string
+      fastbuild:
+        description: 'Kubernetes fast build'
+        required: true
+        type: bool
+        default: false
 
 concurrency: 
   group: ${{ github.ref_name }}-release
@@ -14,9 +19,6 @@ concurrency:
 
 permissions:
   contents: read
-
-env:
-  KUBE_FASTBUILD: "false"
   
 jobs:
   release-kubernetes:
@@ -42,6 +44,7 @@ jobs:
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
         make -C kubernetes release-images
       env:
+        KUBE_FASTBUILD: ${{ inputs.fastbuild }}
         KUBE_GIT_TREE_STATE: clean
         KUBE_GIT_VERSION: ${{ inputs.version }}
         KUBE_RELEASE_RUN_TESTS: n
