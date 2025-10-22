@@ -14,7 +14,7 @@ concurrency:
 
 permissions:
   contents: read
-  
+
 jobs:
   release-kubernetes:
     strategy:
@@ -41,6 +41,16 @@ jobs:
         registry: ${{ vars.REGISTRY }}
         username: ${{ vars.REGISTRY_USER }}
         password: ${{ secrets.REGISTRY_TOKEN }}
+    - name: Create image targets env var
+      run: |
+        TEMP_ARRAY=("cmd/kube-apiserver" "cmd/kube-controller-manager")
+        IFS=','
+        echo "KUBE_SERVER_IMAGE_TARGETS=${TEMP_ARRAY[*]}" >> $GITHUB_ENV
+    - name: Create image targets env var
+      run: |
+        TEMP_ARRAY=("${{ matrix.arch }}")
+        IFS=','
+        echo "KUBE_SERVER_PLATFORMS=${TEMP_ARRAY[*]}" >> $GITHUB_ENV
     - name: Build Kubernetes images
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
