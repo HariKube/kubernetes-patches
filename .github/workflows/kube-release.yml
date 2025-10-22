@@ -19,11 +19,14 @@ jobs:
   release-kubernetes:
     strategy:
       matrix:
+        what:
+        - cmd/kube-apiserver
+        - cmd/kube-controller-manager
         arch:
-        - amd64
-        - ppc64le
-        - s390x
-        - arm64
+        - linux/amd64
+        - linux/ppc64le
+        - linux/s390x
+        - linux/arm64
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -44,6 +47,7 @@ jobs:
     - name: Build Kubernetes images
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
+        (cd kubernetes ; git apply ${{ github.workspace }}/.github/workflows/release-image.patch)
         make -C kubernetes release-images
       env:
         KUBE_FASTBUILD: "false"
@@ -51,8 +55,8 @@ jobs:
         KUBE_GIT_VERSION: ${{ inputs.version }}
         KUBE_RELEASE_RUN_TESTS: n
         KUBE_DOCKER_REGISTRY: ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}
-        KUBE_SERVER_IMAGE_TARGETS: "cmd/kube-apiserver cmd/kube-controller-manager"
-        KUBE_SERVER_PLATFORMS: "${{ matrix.arch }}"
+        WHAT: ${{ matrix.what }}
+        ARCH: ${{ matrix.arch }}
     - name: Push images
       run: |
         docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-apiserver-${{ matrix.arch }}:${{ inputs.version }}
