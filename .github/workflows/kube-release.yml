@@ -5,7 +5,7 @@ on:
     branches:
     - main
 
-workflow_call:
+  workflow_call:
     inputs:
       version:
         description: 'Kubernetes version'
