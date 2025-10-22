@@ -7,11 +7,6 @@ on:
         description: 'Kubernetes version'
         required: true
         type: string
-      fastbuild:
-        description: 'Kubernetes fast build'
-        required: true
-        type: bool
-        default: false
 
 concurrency: 
   group: ${{ github.ref_name }}-release
@@ -22,6 +17,13 @@ permissions:
   
 jobs:
   release-kubernetes:
+    strategy:
+      matrix:
+        arch:
+        - amd64
+        - ppc64le
+        - s390x
+        - arm64
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -44,18 +46,12 @@ jobs:
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
         make -C kubernetes release-images
       env:
-        KUBE_FASTBUILD: ${{ inputs.fastbuild }}
+        KUBE_FASTBUILD: "false"
         KUBE_GIT_TREE_STATE: clean
         KUBE_GIT_VERSION: ${{ inputs.version }}
         KUBE_RELEASE_RUN_TESTS: n
         KUBE_DOCKER_REGISTRY: ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}
     - name: Push images
       run: |
-        docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-apiserver-amd64:${{ inputs.version }}
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-apiserver-ppc64le:${{ inputs.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-apiserver-s390x:${{ inputs.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-apiserver-arm64:${{ inputs.version }} ||:
-        docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-controller-manager-amd64:${{ inputs.version }}
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-controller-manager-ppc64le:${{ inputs.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-controller-manager-s390x:${{ inputs.version }} ||:
-        [[ $KUBE_FASTBUILD = false ]] && docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-controller-manager-arm64:${{ inputs.version }} ||:
+        docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-apiserver-${{ matrix.arch }}:${{ inputs.version }}
+        docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-controller-manager-${{ matrix.arch }}:${{ inputs.version }}
