@@ -29,13 +29,13 @@ jobs:
         - v1.34.0
         - v1.34.1
     if: |
-      contains(github.event.head_commit.message, 'v1.33.0') ||
-      contains(github.event.head_commit.message, 'v1.33.2') ||
-      contains(github.event.head_commit.message, 'v1.33.3') ||
-      contains(github.event.head_commit.message, 'v1.33.4') ||
-      contains(github.event.head_commit.message, 'v1.33.5') ||
-      contains(github.event.head_commit.message, 'v1.34.0') ||
-      contains(github.event.head_commit.message, 'v1.34.1')
+      contains(github.event.head_commit.message, "v1.33.0") ||
+      contains(github.event.head_commit.message, "v1.33.2") ||
+      contains(github.event.head_commit.message, "v1.33.3") ||
+      contains(github.event.head_commit.message, "v1.33.4") ||
+      contains(github.event.head_commit.message, "v1.33.5") ||
+      contains(github.event.head_commit.message, "v1.34.0") ||
+      contains(github.event.head_commit.message, "v1.34.1")
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
