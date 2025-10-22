@@ -41,16 +41,9 @@ jobs:
         registry: ${{ vars.REGISTRY }}
         username: ${{ vars.REGISTRY_USER }}
         password: ${{ secrets.REGISTRY_TOKEN }}
-    - name: Create image targets env var
-      run: |
-        echo "KUBE_SERVER_IMAGE_TARGETS='cmd/kube-apiserver cmd/kube-controller-manager'" >> $GITHUB_ENV
-    - name: Create image targets env var
-      run: |
-        echo "KUBE_SERVER_PLATFORMS='${{ matrix.arch }}'" >> $GITHUB_ENV
     - name: Build Kubernetes images
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
-        env
         make -C kubernetes release-images
       env:
         KUBE_FASTBUILD: "false"
@@ -58,6 +51,8 @@ jobs:
         KUBE_GIT_VERSION: ${{ inputs.version }}
         KUBE_RELEASE_RUN_TESTS: n
         KUBE_DOCKER_REGISTRY: ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}
+        KUBE_SERVER_IMAGE_TARGETS: "cmd/kube-apiserver cmd/kube-controller-manager"
+        KUBE_SERVER_PLATFORMS: "${{ matrix.arch }}"
     - name: Push images
       run: |
         docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kube-apiserver-${{ matrix.arch }}:${{ inputs.version }}
