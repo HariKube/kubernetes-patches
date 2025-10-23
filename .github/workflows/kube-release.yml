@@ -49,7 +49,7 @@ jobs:
     - name: Patch Kubernetes
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
-        sed -i 's#kube::util::host_arch#echo ${{ matrix.arch }}#' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
+        sed -i 's#$(kube::util::host_arch)#$(echo ${{ matrix.arch }})#' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
         sed -i 's#$(kube::golang::server_image_targets)#$(kube::golang::server_image_targets  | tr " " "\\n" | grep ${{ matrix.what }})#' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
         sed -i 's#kube::build::get_docker_wrapped_binaries#kube::build::get_docker_wrapped_binaries  | tr " " "\\n" | grep ${{ matrix.what }}#' ${{ github.workspace }}/kubernetes/build/lib/release.sh
         sed -i 's#kube::build::verify_prereqs#export KUBE_BUILD_PLATFORMS="linux/${{ matrix.arch }}"\nexport CMD_TARGETS="cmd/${{ matrix.what }}"\nexport WAHT="cmd/${{ matrix.what }}"\nkube::build::verify_prereqs#' ${{ github.workspace }}/kubernetes/build/release-images.sh
@@ -62,4 +62,6 @@ jobs:
         KUBE_RELEASE_RUN_TESTS: n
         KUBE_DOCKER_REGISTRY: ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}
     - name: Push images
-      run: docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
+      run: |
+        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}
+        docker push --platform linux/${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}
