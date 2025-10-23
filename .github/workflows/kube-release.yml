@@ -86,10 +86,10 @@ jobs:
         password: ${{ secrets.REGISTRY_TOKEN }}
     - name: Pull images
       run: |
-        docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64
-        docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le
-        docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x
-        docker push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64
     - name: Create manifest
       run: |
         docker manifest create ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }} \
