@@ -9,7 +9,7 @@ on:
         type: string
 
 concurrency: 
-  group: ${{ github.ref_name }}-release
+  group: ${{ github.ref_name }}-release-${{ inputs.version }}
   cancel-in-progress: true
 
 permissions:
