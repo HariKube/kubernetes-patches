@@ -1,0 +1,20 @@
+name: Kube Test Patch
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency: 
+  group: ${{ github.ref_name }}-patch
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Run on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the code
+        uses: actions/checkout@v4
+
+      - name: Running Tests
+        run: make kube-test-patch
