@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 jobs:
-  release-image:
+  vanilla-release:
     strategy:
       matrix:
         what:
@@ -65,7 +65,7 @@ jobs:
       run: |
         docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}
         docker push --platform linux/${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}
-  publish-manifest:
+  vanilla-manifest:
     strategy:
       matrix:
         what:
@@ -73,7 +73,7 @@ jobs:
         - kube-controller-manager
         - kube-scheduler
         - kube-proxy
-    needs: release-image
+    needs: vanilla-release
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -99,3 +99,53 @@ jobs:
         ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64
     - name: Push manifest
       run: docker manifest push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}
+  vcluster-release:
+    strategy:
+      matrix:
+        arch:
+        - amd64
+        - ppc64le
+        - s390x
+        - arm64
+    needs: vanilla-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+    - name: Login to registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ vars.REGISTRY }}
+        username: ${{ vars.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_TOKEN }}
+    - name: Create release
+      run: docker build --build-arg VERSION=${{ inputs.version }} --build-arg ARCH=${{ matrix.arch }} -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-${{ matrix.arch }} .
+    - name: Push release
+      run: docker push --platform linux/${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-${{ matrix.arch }}
+  vcluster-manifest:
+    needs: vcluster-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+    - name: Login to registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ vars.REGISTRY }}
+        username: ${{ vars.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_TOKEN }}
+    - name: Pull images
+      run: |
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-amd64
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-ppc64le
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-s390x
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-arm64
+    - name: Create manifest
+      run: |
+        docker manifest create ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }} \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-amd64 \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-ppc64le \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-s390x \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-arm64
+    - name: Push manifest
+      run: docker manifest push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}
