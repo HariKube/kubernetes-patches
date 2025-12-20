@@ -1,11 +1,11 @@
 diff --git a/cmd/kube-controller-manager/app/controllermanager.go b/cmd/kube-controller-manager/app/controllermanager.go
-index 3f380fa1b7d..53353790f91 100644
+index 873d5e0bbef..bf549b0a5fb 100644
 --- a/cmd/kube-controller-manager/app/controllermanager.go
 +++ b/cmd/kube-controller-manager/app/controllermanager.go
-@@ -626,7 +626,9 @@ func CreateControllerContext(ctx context.Context, s *config.CompletedConfig, roo
- 	sharedInformers := informers.NewSharedInformerFactoryWithOptions(versionedClient, ResyncPeriod(s)(), informers.WithTransform(trim))
+@@ -498,7 +498,9 @@ func CreateControllerContext(ctx context.Context, s *config.CompletedConfig, roo
+ 		return ControllerContext{}, fmt.Errorf("failed to create metadata client: %w", err)
+ 	}
  
- 	metadataClient := metadata.NewForConfigOrDie(rootClientBuilder.ConfigOrDie("metadata-informers"))
 -	metadataInformers := metadatainformer.NewSharedInformerFactoryWithOptions(metadataClient, ResyncPeriod(s)(), metadatainformer.WithTransform(trim))
 +	metadataInformers := metadatainformer.NewSharedInformerFactoryWithOptions(metadataClient, ResyncPeriod(s)(), metadatainformer.WithTransform(trim), metadatainformer.WithTweakListOptions(func(options *metav1.ListOptions) {
 +		options.LabelSelector = "!skip-controller-manager-metadata-caching"
@@ -257,10 +257,10 @@ index 00000000000..4b9078be7af
 +	return ctx, nil
 +}
 diff --git a/staging/src/k8s.io/apiserver/pkg/endpoints/handlers/delete.go b/staging/src/k8s.io/apiserver/pkg/endpoints/handlers/delete.go
-index e8b74c8a913..558878630fe 100644
+index 2efd08d25a8..0579f351bf4 100644
 --- a/staging/src/k8s.io/apiserver/pkg/endpoints/handlers/delete.go
 +++ b/staging/src/k8s.io/apiserver/pkg/endpoints/handlers/delete.go
-@@ -247,6 +247,13 @@ func DeleteCollection(r rest.CollectionDeleter, checkBody bool, scope *RequestSc
+@@ -249,6 +249,13 @@ func DeleteCollection(r rest.CollectionDeleter, checkBody bool, scope *RequestSc
  		// transform fields
  		// TODO: DecodeParametersInto should do this.
  		if listOptions.FieldSelector != nil {
@@ -293,12 +293,12 @@ index eb52baf1946..ac044bd7347 100644
  				return scope.Convertor.ConvertFieldLabel(scope.Kind, label, value)
  			}
 diff --git a/staging/src/k8s.io/apiserver/pkg/storage/etcd3/store.go b/staging/src/k8s.io/apiserver/pkg/storage/etcd3/store.go
-index d8b7a00a2b9..071311e526e 100644
+index 798567d1cd1..2f4148972b3 100644
 --- a/staging/src/k8s.io/apiserver/pkg/storage/etcd3/store.go
 +++ b/staging/src/k8s.io/apiserver/pkg/storage/etcd3/store.go
-@@ -777,13 +777,20 @@ func (s *store) GetList(ctx context.Context, key string, opts storage.ListOption
- 		metricsOp = "list"
- 	}
+@@ -778,12 +778,19 @@ func (s *store) GetList(ctx context.Context, key string, opts storage.ListOption
+ 		metrics.RecordStorageListMetrics(s.groupResource, numFetched, numEvald, numReturn)
+ 	}()
  
 +	fieldSelector := opts.Predicate.Field.String()
 +	if convertedFieldSelector := ctx.Value("CONVERTED_FIELD_SELECTOR"); convertedFieldSelector != nil {
@@ -307,7 +307,6 @@ index d8b7a00a2b9..071311e526e 100644
 +
  	aggregator := s.listErrAggrFactory()
  	for {
- 		startTime := time.Now()
  		getResp, err = s.getList(ctx, keyPrefix, opts.Recursive, kubernetes.ListOptions{
 -			Revision: withRev,
 -			Limit:    limit,
@@ -318,10 +317,10 @@ index d8b7a00a2b9..071311e526e 100644
 +			LabelSelector: opts.Predicate.Label.String(),
 +			FieldSelector: fieldSelector,
  		})
- 		metrics.RecordEtcdRequest(metricsOp, s.groupResource, err, startTime)
  		if err != nil {
+ 			if errors.Is(err, etcdrpc.ErrFutureRev) {
 diff --git a/staging/src/k8s.io/apiserver/pkg/storage/etcd3/watcher.go b/staging/src/k8s.io/apiserver/pkg/storage/etcd3/watcher.go
-index 76f65f160eb..761cdef7129 100644
+index cf16606bc51..dcbac105300 100644
 --- a/staging/src/k8s.io/apiserver/pkg/storage/etcd3/watcher.go
 +++ b/staging/src/k8s.io/apiserver/pkg/storage/etcd3/watcher.go
 @@ -114,7 +114,17 @@ func (w *watcher) Watch(ctx context.Context, key string, rev int64, opts storage
@@ -380,10 +379,10 @@ index 76f65f160eb..761cdef7129 100644
 +		opts = append(opts, clientv3.WithFieldSelector(fieldSelector))
 +	}
  	wch := wc.watcher.client.Watch(wc.ctx, wc.key, opts...)
+ 	estimator := wc.getResourceSizeEstimator()
  	for wres := range wch {
- 		if wres.Err() != nil {
 diff --git a/staging/src/k8s.io/client-go/metadata/metadatainformer/informer.go b/staging/src/k8s.io/client-go/metadata/metadatainformer/informer.go
-index 6eb0584fd39..8140549ca4f 100644
+index 665198f12a2..53e957f0553 100644
 --- a/staging/src/k8s.io/client-go/metadata/metadatainformer/informer.go
 +++ b/staging/src/k8s.io/client-go/metadata/metadatainformer/informer.go
 @@ -35,6 +35,14 @@ import (
