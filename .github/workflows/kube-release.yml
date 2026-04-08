@@ -22,8 +22,6 @@ jobs:
         what:
         - kube-apiserver
         - kube-controller-manager
-        - kube-scheduler
-        - kube-proxy
         arch:
         - amd64
         - ppc64le
@@ -71,8 +69,6 @@ jobs:
         what:
         - kube-apiserver
         - kube-controller-manager
-        - kube-scheduler
-        - kube-proxy
     needs: vanilla-release
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -119,7 +115,7 @@ jobs:
         username: ${{ vars.REGISTRY_USER }}
         password: ${{ secrets.REGISTRY_TOKEN }}
     - name: Create release
-      run: docker build --build-arg VERSION=${{ inputs.version }} --build-arg ARCH=${{ matrix.arch }} -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-${{ matrix.arch }} .
+      run: docker build --platform linux/${{ matrix.arch }} --build-arg VERSION=${{ inputs.version }} --build-arg ARCH=${{ matrix.arch }} -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-${{ matrix.arch }} .
     - name: Push release
       run: docker push --platform linux/${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-${{ matrix.arch }}
   vcluster-manifest:
