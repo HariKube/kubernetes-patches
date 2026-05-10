@@ -48,7 +48,7 @@ jobs:
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
         sed -i 's~$(kube::util::host_arch)~$(echo ${{ matrix.arch }})~' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
-        sed -i 's~echo "${targets\[@\]}"~echo "${{ matrix.what }},${KUBE_APISERVER_BASE_IMAGE}"~' ${{ github.workspace }}/kubernetes/build/common.sh
+        sed -i 's~echo "${targets\[@\]}"~echo "${{ matrix.what }},$(echo "${{ matrix.what }}" | tr '-' '_' | tr '[:lower:]' '[:upper:]')_BASE_IMAGE"~' ${{ github.workspace }}/kubernetes/build/common.sh
         sed -i 's~WHAT="${CMD_TARGETS}"~WHAT="staging/src/k8s.io/component-base/logs/kube-log-runner cmd/${{ matrix.what }}"~' ${{ github.workspace }}/kubernetes/build/release-images.sh
     - name: Build Kubernetes images
       run: make -C kubernetes release-images
