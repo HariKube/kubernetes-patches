@@ -47,7 +47,7 @@ jobs:
     - name: Patch Kubernetes
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
-        sed -i 's~$(kube::util::host_arch)~$(echo ${{ matrix.arch }})~' hack/lib/golang.sh
+        sed -i 's~$(kube::util::host_arch)~$(echo ${{ matrix.arch }})~' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
         sed -i 's~echo "${targets\[@\]}"~echo "${{ matrix.what }},$(__default_base_image k8s.io/kubernetes/cmd/${{ matrix.what }})"~' ${{ github.workspace }}/kubernetes/build/common.sh
         sed -i 's~WHAT="${CMD_TARGETS}"~WHAT="staging/src/k8s.io/component-base/logs/kube-log-runner cmd/${{ matrix.what }}"~' ${{ github.workspace }}/kubernetes/build/release-images.sh
         sed -i 's~wrapped_binaries=("${KUBE_SERVER_IMAGE_BINARIES\[@\]:1}")~wrapped_binaries=("$(echo "${{ matrix.what }}")")~' ${{ github.workspace }}/kubernetes/build/lib/release.sh
