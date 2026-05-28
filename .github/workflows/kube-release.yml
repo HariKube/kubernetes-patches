@@ -49,9 +49,10 @@ jobs:
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
         sed -i 's~$(kube::util::host_arch)~$(echo ${{ matrix.arch }})~' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
-        sed -i 's~echo "${targets\[@\]}"~echo "${{ matrix.what }},$(__default_base_image k8s.io/kubernetes/cmd/${{ matrix.what }})"~' ${{ github.workspace }}/kubernetes/build/common.sh
-        sed -i 's~WHAT="${CMD_TARGETS}"~WHAT="staging/src/k8s.io/component-base/logs/kube-log-runner cmd/${{ matrix.what }}"~' ${{ github.workspace }}/kubernetes/build/release-images.sh
-        sed -i 's~wrapped_binaries=("${KUBE_SERVER_IMAGE_BINARIES\[@\]:1}")~wrapped_binaries=("$(echo "${{ matrix.what }}")")~' ${{ github.workspace }}/kubernetes/build/lib/release.sh
+        sed -i 's~$(kube::golang::server_image_targets)~$(kube::golang::server_image_targets  | tr " " "\\n" | grep ${{ matrix.what }})~' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
+        sed -i 's~kube::build::get_docker_wrapped_binaries~kube::build::get_docker_wrapped_binaries  | tr " " "\\n" | grep ${{ matrix.what }}~' ${{ github.workspace }}/kubernetes/build/lib/release.sh
+        sed -i 's~cp "${wrapped_binaries\[@\]/#/${LOCAL_OUTPUT_BINPATH}/${platform}/}"~cp "${KUBE_SERVER_IMAGE_BINARIES[@]/#/${LOCAL_OUTPUT_BINPATH}/${platform}/}"~' ${{ github.workspace }}/kubernetes/build/lib/release.sh
+        sed -i 's~kube::build::verify_prereqs~export KUBE_BUILD_PLATFORMS="linux/${{ matrix.arch }}"\nexport CMD_TARGETS="cmd/${{ matrix.what }}"\nexport WAHT="cmd/${{ matrix.what }}"\nkube::build::verify_prereqs~' ${{ github.workspace }}/kubernetes/build/release-images.sh
     - name: Patch Kubernetes >= v1.36.0
       if: ${{ startsWith(inputs.version, 'v1.36') }}
       run: |
