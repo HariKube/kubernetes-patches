@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         what:
-        - kube-apiserver
+        - kube-apiserver,kubectl
         - kube-controller-manager
         arch:
         - amd64
