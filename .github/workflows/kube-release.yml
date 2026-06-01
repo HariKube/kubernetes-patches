@@ -53,6 +53,9 @@ jobs:
         sed -i 's~$(kube::util::host_arch)~${{ matrix.arch }}~' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
         sed -i 's~$(kube::golang::server_image_targets)~staging/src/k8s.io/component-base/logs/kube-log-runner cmd/${{ matrix.what }} cmd/kubectl~' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
         sed -i 's~$(kube::build::get_docker_wrapped_binaries)~"${{ matrix.what }},${'$(echo -n ${{ matrix.what }} | tr "a-z-" "A-Z_")'_BASE_IMAGE}"~' ${{ github.workspace }}/kubernetes/build/lib/release.sh
+        sed -i 's~ln "${binary_file_path}" "${docker_build_path}/${binary_name}"~ln "${binary_file_path}" "${docker_build_path}/${binary_name}" ; ln "${binary_dir}/kubectl" "${docker_build_path}/kubectl"~' ${{ github.workspace }}/kubernetes/build/lib/release.sh
+        sed -i 's~COPY --from=0 /${BINARY} /usr/local/bin/${BINARY}~COPY --from=0 /${BINARY} /usr/local/bin/${BINARY}\nCOPY --chmod=755 kubectl /usr/local/bin/kubectl~' ${{ github.workspace }}/kubernetes/build/server-image/kube-apiserver/Dockerfile
+        sed -i 's~COPY --from=0 /binary_to_set /usr/local/bin/${BINARY}~COPY --from=0 /binary_to_set /usr/local/bin/${BINARY}\nCOPY --chmod=755 kubectl /usr/local/bin/kubectl~' ${{ github.workspace }}/kubernetes/build/server-image/kube-apiserver/Dockerfile
     - name: Build Kubernetes images
       run: make -C kubernetes release-images
       env:
