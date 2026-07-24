@@ -1,10 +1,8 @@
+ARG VERSION=0
+ARG ARCH=0
 FROM --platform=linux/$BUILDARCH busybox:latest AS directories
 RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
 RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
-
-ARG VERSION=0
-ARG ARCH=0
-
 FROM quay.io/harikube/kube-apiserver:${VERSION}-${ARCH} AS apiserver
 FROM quay.io/harikube/kube-controller-manager:${VERSION}-${ARCH} AS controllermanager
 FROM registry.k8s.io/kube-scheduler:${VERSION} AS kubescheduler
