@@ -1,5 +1,5 @@
-ARG VERSION=0
-ARG ARCH=0
+ARG VERSION
+ARG ARCH
 FROM --platform=linux/$BUILDARCH busybox:latest AS directories
 RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
 RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
@@ -9,9 +9,7 @@ FROM registry.k8s.io/kube-scheduler:${VERSION} AS kubescheduler
 FROM registry.k8s.io/kube-proxy:${VERSION} AS kubeproxy
 
 FROM --platform=linux/${ARCH} registry.access.redhat.com/ubi9/ubi-micro:latest
-
 ARG VERSION
-
 LABEL name="HariKube"
 LABEL vendor="inspirNation Bt."
 LABEL version=${VERSION}

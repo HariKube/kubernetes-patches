@@ -138,6 +138,8 @@ jobs:
         password: ${{ secrets.REGISTRY_TOKEN }}
     - name: Create release
       run: docker build --platform linux/${{ matrix.arch }} --build-arg VERSION=${{ inputs.version }} --build-arg ARCH=${{ matrix.arch }} -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-${{ matrix.arch }} .
+      env:
+        BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
     - name: Push release
       if: ${{ ! inputs.latest }}
       run: |
