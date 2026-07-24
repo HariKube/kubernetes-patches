@@ -14,7 +14,7 @@ ARG VERSION
 
 LABEL name="HariKube"
 LABEL vendor="inspirNation Bt."
-LABEL version="${VERSION}"
+LABEL version=${VERSION}
 LABEL release="0"
 LABEL summary="Kubernetes HariKube Edition"
 LABEL description="Kubernetes HariKube edition is a horizontally scalable Kubernetes edition."
