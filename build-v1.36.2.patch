@@ -19,7 +19,7 @@ index 727273082a6..04f5fd7a924 100644
  ARG BASEIMAGE
  ARG BINARY
  
-+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest AS directories
++FROM busybox:latest AS directories
 +RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
 +RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
  
@@ -45,7 +45,7 @@ index ff815a0afee..7fb67e65373 100644
  # non-root and still listen on port less than 1024
  RUN ["setcap", "cap_net_bind_service=+ep", "/binary_to_set"]
  
-+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest AS directories
++FROM busybox:latest AS directories
 +RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
 +RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
 +
