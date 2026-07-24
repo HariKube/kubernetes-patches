@@ -47,15 +47,12 @@ jobs:
     - name: Patch Kubernetes
       run: |
         (cd kubernetes ; git apply ${{ github.workspace }}/kubernetes-${{ inputs.version }}.patch)
+        (cd kubernetes ; git apply ${{ github.workspace }}/build-${{ inputs.version }}.patch)
         sed -i 's~WHAT="${CMD_TARGETS}"~WHAT="staging/src/k8s.io/component-base/logs/kube-log-runner cmd/${{ matrix.what }} cmd/kubectl"~' ${{ github.workspace }}/kubernetes/build/release-images.sh
         sed -i 's~KUBE_BUILD_PLATFORMS="${KUBE_SERVER_PLATFORMS\[\*\]}"~KUBE_BUILD_PLATFORMS="linux/${{ matrix.arch }}"~' ${{ github.workspace }}/kubernetes/build/release-images.sh
-        sed -i 's~KUBE_GIT_VERSION+="-dirty"~KUBE_GIT_VERSION+=""~' ${{ github.workspace }}/kubernetes/hack/lib/version.sh
         sed -i 's~$(kube::util::host_arch)~${{ matrix.arch }}~' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
         sed -i 's~$(kube::golang::server_image_targets)~staging/src/k8s.io/component-base/logs/kube-log-runner cmd/${{ matrix.what }} cmd/kubectl~' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
         sed -i 's~$(kube::build::get_docker_wrapped_binaries)~"${{ matrix.what }},${'$(echo -n ${{ matrix.what }} | tr "a-z-" "A-Z_")'_BASE_IMAGE}"~' ${{ github.workspace }}/kubernetes/build/lib/release.sh
-        sed -i 's~ln "${binary_file_path}" "${docker_build_path}/${binary_name}"~ln "${binary_file_path}" "${docker_build_path}/${binary_name}" ; ln "${binary_dir}/kubectl" "${docker_build_path}/kubectl"~' ${{ github.workspace }}/kubernetes/build/lib/release.sh
-        sed -i 's~COPY --from=0 /${BINARY} /usr/local/bin/${BINARY}~COPY --from=0 /${BINARY} /usr/local/bin/${BINARY}\nCOPY --chmod=755 kubectl /usr/local/bin/kubectl~' ${{ github.workspace }}/kubernetes/build/server-image/kube-apiserver/Dockerfile
-        sed -i 's~COPY --from=0 /binary_to_set /usr/local/bin/${BINARY}~COPY --from=0 /binary_to_set /usr/local/bin/${BINARY}\nCOPY --chmod=755 kubectl /usr/local/bin/kubectl~' ${{ github.workspace }}/kubernetes/build/server-image/kube-apiserver/Dockerfile
     - name: Build Kubernetes images
       run: make -C kubernetes release-images
       env:
@@ -65,6 +62,8 @@ jobs:
         KUBE_RELEASE_RUN_TESTS: n
         KUBE_BUILD_PLATFORMS: linux/${{ matrix.arch }}
         KUBE_DOCKER_REGISTRY: ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}
+        KUBE_APISERVER_BASE_IMAGE: registry.access.redhat.com/ubi9/ubi-micro:latest
+        KUBE_CONTROLLER_MANAGER_BASE_IMAGE: registry.access.redhat.com/ubi9/ubi-micro:latest
     - name: Push images
       run: |
         docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}
