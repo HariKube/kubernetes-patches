@@ -24,7 +24,7 @@ jobs:
         id: extract_latest
 
       - name: Build latest
-        uses: .github/workflows/kube-release.yaml
+        uses: ./.github/workflows/kube-release.yaml
         with:
           version: ${{ steps.extract_latest.outputs.latest }}
           latest: true
