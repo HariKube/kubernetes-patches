@@ -1,0 +1,30 @@
+name: Kube Latest
+
+on:
+  push:
+    branches: [main]
+
+  pull_request:
+    branches: [main]
+
+concurrency: 
+  group: ${{ github.ref_name }}-latest
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Run on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the code
+        uses: actions/checkout@v4
+
+      - name: Extract latest
+        run: echo "latest=$(basename $(ls -1 *.patch | tail -1 | cut -d'-' -f2) .patch)" >> $GITHUB_OUTPUT
+        id: extract_latest
+
+      - name: Build latest
+        uses: .github/workflows/kube-release.yaml
+        with:
+          version: ${{ steps.extract_latest.outputs.latest }}
+          latest: true
