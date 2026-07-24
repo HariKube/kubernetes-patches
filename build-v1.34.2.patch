@@ -19,7 +19,7 @@ index 78e01c36474..23fd784d1f5 100644
  ARG BASEIMAGE
  ARG BINARY
  
-+FROM --platform=linux/$TARGETARCH busybox:latest AS directories
++FROM --platform=linux/$BUILDARCH busybox:latest AS directories
 +RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
 +RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
  
@@ -43,7 +43,7 @@ index d5ac37d14f1..400dabb1d83 100644
  # non-root and still listen on port less than 1024
  RUN setcap cap_net_bind_service=+ep /${BINARY}
  
-+FROM --platform=linux/$TARGETARCH busybox:latest AS directories
++FROM --platform=linux/$BUILDARCH busybox:latest AS directories
 +RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
 +RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
 +
