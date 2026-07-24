@@ -104,7 +104,7 @@ jobs:
         docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64
     - name: Create manifest
       run: |
-        docker manifest create ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }} \
+        docker manifest create ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.latest && 'latest' || inputs.version }} \
         ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64 \
         ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le \
         ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x \
@@ -116,7 +116,6 @@ jobs:
     - name: Push latest
       if: ${{ inputs.latest }}
       run: |
-        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:latest
         docker manifest push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:latest
   vcluster-release:
     strategy:
@@ -168,7 +167,7 @@ jobs:
         docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-arm64
     - name: Create manifest
       run: |
-        docker manifest create ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }} \
+        docker manifest create ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.latest && 'latest' || inputs.version }} \
         ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-amd64 \
         ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-ppc64le \
         ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-s390x \
@@ -180,5 +179,4 @@ jobs:
     - name: Push latest
       if: ${{ inputs.latest }}
       run: |
-        docker tag docker manifest push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }} docker manifest push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:latest
         docker manifest push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:latest
