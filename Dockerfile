@@ -10,7 +10,7 @@ FROM registry.k8s.io/kube-proxy:${VERSION} AS kubeproxy
 
 FROM --platform=linux/${ARCH} registry.access.redhat.com/ubi9/ubi-micro:latest
 
-ARG VERSION=0
+ARG VERSION
 
 LABEL name="HariKube"
 LABEL vendor="inspirNation Bt."
