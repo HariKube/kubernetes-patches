@@ -9,10 +9,9 @@ FROM registry.k8s.io/kube-scheduler:${VERSION} AS kubescheduler
 FROM registry.k8s.io/kube-proxy:${VERSION} AS kubeproxy
 
 FROM --platform=linux/${ARCH} registry.access.redhat.com/ubi9/ubi-micro:latest
-ARG VERSION
 LABEL name="HariKube"
 LABEL vendor="inspirNation Bt."
-LABEL version=${VERSION}
+LABEL version=1.36.2
 LABEL release="0"
 LABEL summary="Kubernetes HariKube Edition"
 LABEL description="Kubernetes HariKube edition is a horizontally scalable Kubernetes edition."
