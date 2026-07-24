@@ -12,11 +12,16 @@ index 135c1059a1c..6ad5728698f 100644
          local build_log="${docker_build_path}/build.log"
          if ! DOCKER_CLI_EXPERIMENTAL=enabled "${DOCKER[@]}" buildx build \
 diff --git a/build/server-image/Dockerfile b/build/server-image/Dockerfile
-index 727273082a6..b8e30f591ad 100644
+index 727273082a6..04f5fd7a924 100644
 --- a/build/server-image/Dockerfile
 +++ b/build/server-image/Dockerfile
-@@ -19,6 +19,18 @@ ARG BINARY
+@@ -17,8 +17,21 @@
+ ARG BASEIMAGE
+ ARG BINARY
  
++FROM registry.access.redhat.com/ubi9/ubi-minimal:latest AS directories
++RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
++RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
  
  FROM "${BASEIMAGE}"
 +LABEL name="HariKube"
@@ -27,20 +32,23 @@ index 727273082a6..b8e30f591ad 100644
 +LABEL description="Kubernetes HariKube edition is a horizontally scalable Kubernetes edition."
 +LABEL maintainer="richard.kovacs@harikube.com"
 +COPY LICENSE /licenses/LICENSE
-+RUN mkdir -p /tmp
-+RUN chown -R 65534:0 /tmp
-+RUN chmod -R 775 /tmp
++COPY --from=directories --chown=65534:0 /tmp/rootfs/* /
 +USER 65534
  COPY --chmod=755 ${BINARY} /usr/local/bin/${BINARY}
  # NOTE: /go-runner is used here for compatibility
  COPY --chmod=755 kube-log-runner /go-runner
 diff --git a/build/server-image/kube-apiserver/Dockerfile b/build/server-image/kube-apiserver/Dockerfile
-index ff815a0afee..ead3e9e7b17 100644
+index ff815a0afee..7fb67e65373 100644
 --- a/build/server-image/kube-apiserver/Dockerfile
 +++ b/build/server-image/kube-apiserver/Dockerfile
-@@ -26,9 +26,22 @@ COPY --chmod=755 ${BINARY} /binary_to_set
+@@ -25,10 +25,25 @@ COPY --chmod=755 ${BINARY} /binary_to_set
+ # non-root and still listen on port less than 1024
  RUN ["setcap", "cap_net_bind_service=+ep", "/binary_to_set"]
  
++FROM registry.access.redhat.com/ubi9/ubi-minimal:latest AS directories
++RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
++RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
++
  FROM --platform=linux/$TARGETARCH ${BASEIMAGE}
 +LABEL name="HariKube"
 +LABEL vendor="inspirNation Bt."
@@ -50,9 +58,7 @@ index ff815a0afee..ead3e9e7b17 100644
 +LABEL description="Kubernetes HariKube edition is a horizontally scalable Kubernetes edition."
 +LABEL maintainer="richard.kovacs@harikube.com"
 +COPY LICENSE /licenses/LICENSE
-+RUN mkdir -p /var/run/kubernetes /etc/kubernetes/pki /tmp
-+RUN chown -R 65534:0 /var/run/kubernetes /etc/kubernetes /tmp
-+RUN chmod -R 775 /var/run/kubernetes /etc/kubernetes /tmp
++COPY --from=directories --chown=65534:0 /tmp/rootfs/* /
 +USER 65534
  ARG BINARY
  
