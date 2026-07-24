@@ -143,7 +143,7 @@ jobs:
       run: |
         docker push --platform linux/${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-${{ matrix.arch }}
     - name: Push latest
-      if: ${{ ! inputs.latest }}
+      if: ${{ inputs.latest }}
       run: |
         docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:${{ inputs.version }}-${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:latest
         docker push --platform linux/${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/kubernetes:latest
