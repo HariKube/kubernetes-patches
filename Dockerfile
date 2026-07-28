@@ -19,7 +19,7 @@ LABEL description="Kubernetes HariKube edition is a horizontally scalable Kubern
 LABEL maintainer="richard.kovacs@harikube.com"
 COPY LICENSE /licenses/LICENSE
 COPY --from=directories --chown=65534:0 /tmp/rootfs/* /
-USER 65534
+USER 0
 COPY --from=apiserver /usr/local/bin/kube-apiserver /kubernetes/kube-apiserver
 COPY --from=controllermanager /usr/local/bin/kube-controller-manager /kubernetes/kube-controller-manager
 COPY --from=kubescheduler /usr/local/bin/kube-scheduler /kubernetes/kube-scheduler

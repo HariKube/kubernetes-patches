@@ -33,7 +33,7 @@ index 09d2cd1e691..92a633e273d 100644
 +LABEL maintainer="richard.kovacs@harikube.com"
 +COPY LICENSE /licenses/LICENSE
 +COPY --from=directories --chown=65534:0 /tmp/rootfs/* /
-+USER 65534
++USER 0
  COPY --chmod=755 ${BINARY} /usr/local/bin/${BINARY}
 diff --git a/build/server-image/kube-apiserver/Dockerfile b/build/server-image/kube-apiserver/Dockerfile
 index 27129d29bd9..df114656cb9 100644
@@ -57,7 +57,7 @@ index 27129d29bd9..df114656cb9 100644
 +LABEL maintainer="richard.kovacs@harikube.com"
 +COPY LICENSE /licenses/LICENSE
 +COPY --from=directories --chown=65534:0 /tmp/rootfs/* /
-+USER 65534
++USER 0
  ARG BINARY
  COPY --from=0 /${BINARY} /usr/local/bin/${BINARY}
 +COPY --chmod=755 kubectl /usr/local/bin/kubectl
