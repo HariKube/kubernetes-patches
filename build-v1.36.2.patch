@@ -12,7 +12,7 @@ index 135c1059a1c..6ad5728698f 100644
          local build_log="${docker_build_path}/build.log"
          if ! DOCKER_CLI_EXPERIMENTAL=enabled "${DOCKER[@]}" buildx build \
 diff --git a/build/server-image/Dockerfile b/build/server-image/Dockerfile
-index 727273082a6..04f5fd7a924 100644
+index 727273082a6..a16363a8602 100644
 --- a/build/server-image/Dockerfile
 +++ b/build/server-image/Dockerfile
 @@ -17,8 +17,21 @@
@@ -20,13 +20,13 @@ index 727273082a6..04f5fd7a924 100644
  ARG BINARY
  
 +FROM --platform=linux/$BUILDARCH busybox:latest AS directories
-+RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
-+RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
++RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/tmp /tmp/rootfs/etc/ssl/certs /tmp/rootfs/etc/ca-certificates /tmp/rootfs/etc/kubernetes/pki /tmp/rootfs/usr/local/share/ca-certificates /tmp/rootfs/usr/share/ca-certificates
++RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/tmp /tmp/rootfs/etc/ssl/certs /tmp/rootfs/etc/ca-certificates /tmp/rootfs/etc/kubernetes /tmp/rootfs/usr/local/share/ca-certificates /tmp/rootfs/usr/share/ca-certificates
  
  FROM "${BASEIMAGE}"
 +LABEL name="HariKube"
 +LABEL vendor="inspirNation Bt."
-+LABEL version="1.36.2"
++LABEL version="1.36.1"
 +LABEL release="0"
 +LABEL summary="Kubernetes HariKube Edition"
 +LABEL description="Kubernetes HariKube edition is a horizontally scalable Kubernetes edition."
@@ -38,7 +38,7 @@ index 727273082a6..04f5fd7a924 100644
  # NOTE: /go-runner is used here for compatibility
  COPY --chmod=755 kube-log-runner /go-runner
 diff --git a/build/server-image/kube-apiserver/Dockerfile b/build/server-image/kube-apiserver/Dockerfile
-index ff815a0afee..7fb67e65373 100644
+index ff815a0afee..22297f5d143 100644
 --- a/build/server-image/kube-apiserver/Dockerfile
 +++ b/build/server-image/kube-apiserver/Dockerfile
 @@ -25,10 +25,25 @@ COPY --chmod=755 ${BINARY} /binary_to_set
@@ -46,13 +46,13 @@ index ff815a0afee..7fb67e65373 100644
  RUN ["setcap", "cap_net_bind_service=+ep", "/binary_to_set"]
  
 +FROM --platform=linux/$BUILDARCH busybox:latest AS directories
-+RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
-+RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
++RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/tmp /tmp/rootfs/etc/ssl/certs /tmp/rootfs/etc/ca-certificates /tmp/rootfs/etc/kubernetes/pki /tmp/rootfs/usr/local/share/ca-certificates /tmp/rootfs/usr/share/ca-certificates
++RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/tmp /tmp/rootfs/etc/ssl/certs /tmp/rootfs/etc/ca-certificates /tmp/rootfs/etc/kubernetes /tmp/rootfs/usr/local/share/ca-certificates /tmp/rootfs/usr/share/ca-certificates
 +
  FROM --platform=linux/$TARGETARCH ${BASEIMAGE}
 +LABEL name="HariKube"
 +LABEL vendor="inspirNation Bt."
-+LABEL version="1.36.2"
++LABEL version="1.36.1"
 +LABEL release="0"
 +LABEL summary="Kubernetes HariKube Edition"
 +LABEL description="Kubernetes HariKube edition is a horizontally scalable Kubernetes edition."

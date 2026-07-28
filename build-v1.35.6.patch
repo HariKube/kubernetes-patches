@@ -20,8 +20,8 @@ index 09d2cd1e691..92a633e273d 100644
  ARG BINARY
  
 +FROM --platform=linux/$BUILDARCH busybox:latest AS directories
-+RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
-+RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
++RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/tmp /tmp/rootfs/etc/ssl/certs /tmp/rootfs/etc/ca-certificates /tmp/rootfs/etc/kubernetes/pki /tmp/rootfs/usr/local/share/ca-certificates /tmp/rootfs/usr/share/ca-certificates
++RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/tmp /tmp/rootfs/etc/ssl/certs /tmp/rootfs/etc/ca-certificates /tmp/rootfs/etc/kubernetes /tmp/rootfs/usr/local/share/ca-certificates /tmp/rootfs/usr/share/ca-certificates
  
  FROM "${BASEIMAGE}"
 +LABEL name="HariKube"
@@ -44,8 +44,8 @@ index 27129d29bd9..df114656cb9 100644
  RUN setcap cap_net_bind_service=+ep /${BINARY}
  
 +FROM --platform=linux/$BUILDARCH busybox:latest AS directories
-+RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
-+RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/etc/kubernetes /tmp/rootfs/tmp
++RUN mkdir -p /tmp/rootfs/var/run/kubernetes /tmp/rootfs/tmp /tmp/rootfs/etc/ssl/certs /tmp/rootfs/etc/ca-certificates /tmp/rootfs/etc/kubernetes/pki /tmp/rootfs/usr/local/share/ca-certificates /tmp/rootfs/usr/share/ca-certificates
++RUN chmod -R 775 /tmp/rootfs/var/run/kubernetes /tmp/rootfs/tmp /tmp/rootfs/etc/ssl/certs /tmp/rootfs/etc/ca-certificates /tmp/rootfs/etc/kubernetes /tmp/rootfs/usr/local/share/ca-certificates /tmp/rootfs/usr/share/ca-certificates
 +
  FROM --platform=linux/$TARGETARCH ${BASEIMAGE}
 +LABEL name="HariKube"
