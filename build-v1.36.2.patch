@@ -33,7 +33,7 @@ index 727273082a6..b2971ca1f9f 100644
 +LABEL maintainer="richard.kovacs@harikube.com"
 +COPY LICENSE /licenses/LICENSE
 +COPY --from=directories --chown=65534:0 /tmp/rootfs/* /
-+USER 65534
++USER 0
  COPY --chmod=755 ${BINARY} /usr/local/bin/${BINARY}
  # NOTE: /go-runner is used here for compatibility
  COPY --chmod=755 kube-log-runner /go-runner
@@ -62,7 +62,7 @@ index ff815a0afee..fbd79daf54a 100644
 +LABEL maintainer="richard.kovacs@harikube.com"
 +COPY LICENSE /licenses/LICENSE
 +COPY --from=directories --chown=65534:0 /tmp/rootfs/* /
-+USER 65534
++USER 0
  ARG BINARY
  
  COPY --from=0 /binary_to_set /usr/local/bin/${BINARY}

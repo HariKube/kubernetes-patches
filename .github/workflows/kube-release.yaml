@@ -32,6 +32,9 @@ jobs:
         - ppc64le
         - s390x
         - arm64
+        user:
+        - 0
+        - 65534
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -69,11 +72,21 @@ jobs:
         KUBE_DOCKER_REGISTRY: ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}
         KUBE_APISERVER_BASE_IMAGE: registry.access.redhat.com/ubi9/ubi-micro:latest
         KUBE_CONTROLLER_MANAGER_BASE_IMAGE: registry.access.redhat.com/ubi9/ubi-micro:latest
+    - name: Set image user
+      if: ${{ matrix.user != 0 }}
+      run: |
+        docker save ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} -o /tmp/baked image.tar
+        docker save ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} | podman load
+        podman create --name tmp ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
+        podman commit --change 'USER 65534' rootless
+        podman rm tmp
+        podman tag rootless ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
+        podman save ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} | docker load
     - name: Push images
       if: ${{ ! inputs.latest }}
       run: |
-        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}
-        docker push --platform linux/${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}
+        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}${{ matrix.user == 0 && '' || '-rootless' }}
+        docker push --platform linux/${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}${{ matrix.user == 0 && '' || '-rootless' }}
     - name: Push latest
       if: ${{ inputs.latest }}
       run: |
@@ -85,6 +98,9 @@ jobs:
         what:
         - kube-apiserver
         - kube-controller-manager
+        user:
+        - 0
+        - 65534
     needs: vanilla-release
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -98,21 +114,21 @@ jobs:
         password: ${{ secrets.REGISTRY_TOKEN }}
     - name: Pull images
       run: |
-        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64
-        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le
-        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x
-        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64${{ matrix.user == 0 && '' || '-rootless' }}
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le${{ matrix.user == 0 && '' || '-rootless' }}
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x${{ matrix.user == 0 && '' || '-rootless' }}
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64${{ matrix.user == 0 && '' || '-rootless' }}
     - name: Create manifest
       run: |
-        docker manifest create ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.latest && 'latest' || inputs.version }} \
-        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64 \
-        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le \
-        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x \
-        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64
+        docker manifest create ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.latest && 'latest' || inputs.version }}${{ matrix.user == 0 && '' || '-rootless' }} \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64${{ matrix.user == 0 && '' || '-rootless' }} \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le${{ matrix.user == 0 && '' || '-rootless' }} \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x${{ matrix.user == 0 && '' || '-rootless' }} \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64${{ matrix.user == 0 && '' || '-rootless' }}
     - name: Push manifest
       if: ${{ ! inputs.latest }}
       run: |
-        docker manifest push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}
+        docker manifest push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}${{ matrix.user == 0 && '' || '-rootless' }}
     - name: Push latest
       if: ${{ inputs.latest }}
       run: |
