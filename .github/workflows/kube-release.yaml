@@ -75,7 +75,6 @@ jobs:
     - name: Set image user
       if: ${{ matrix.user != 0 }}
       run: |
-        docker save ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} -o /tmp/baked image.tar
         docker save ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} | podman load
         podman create --name tmp ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
         podman commit --change 'USER 65534' rootless
