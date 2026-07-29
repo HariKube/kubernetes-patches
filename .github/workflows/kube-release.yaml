@@ -81,8 +81,8 @@ jobs:
     - name: Push images
       if: ${{ ! inputs.latest }}
       run: |
-        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}${{ matrix.user == '0' && '' || '-rootless' }}
-        docker push --platform linux/${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}${{ matrix.user == '0' && '' || '-rootless' }}
+        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}${{ matrix.user == 0 && '' || '-rootless' }}
+        docker push --platform linux/${{ matrix.arch }} ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-${{ matrix.arch }}${{ matrix.user == 0 && '' || '-rootless' }}
     - name: Push latest
       if: ${{ inputs.latest }}
       run: |
@@ -110,21 +110,21 @@ jobs:
         password: ${{ secrets.REGISTRY_TOKEN }}
     - name: Pull images
       run: |
-        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64${{ matrix.user == '0' && '' || '-rootless' }}
-        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le${{ matrix.user == '0' && '' || '-rootless' }}
-        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x${{ matrix.user == '0' && '' || '-rootless' }}
-        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64${{ matrix.user == '0' && '' || '-rootless' }}
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64${{ matrix.user == 0 && '' || '-rootless' }}
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le${{ matrix.user == 0 && '' || '-rootless' }}
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x${{ matrix.user == 0 && '' || '-rootless' }}
+        docker pull ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64${{ matrix.user == 0 && '' || '-rootless' }}
     - name: Create manifest
       run: |
-        docker manifest create ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.latest && 'latest' || inputs.version }}${{ matrix.user == '0' && '' || '-rootless' }} \
-        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64${{ matrix.user == '0' && '' || '-rootless' }} \
-        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le${{ matrix.user == '0' && '' || '-rootless' }} \
-        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x${{ matrix.user == '0' && '' || '-rootless' }} \
-        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64${{ matrix.user == '0' && '' || '-rootless' }}
+        docker manifest create ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.latest && 'latest' || inputs.version }}${{ matrix.user == 0 && '' || '-rootless' }} \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-amd64${{ matrix.user == 0 && '' || '-rootless' }} \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-ppc64le${{ matrix.user == 0 && '' || '-rootless' }} \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-s390x${{ matrix.user == 0 && '' || '-rootless' }} \
+        ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}-arm64${{ matrix.user == 0 && '' || '-rootless' }}
     - name: Push manifest
       if: ${{ ! inputs.latest }}
       run: |
-        docker manifest push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}${{ matrix.user == '0' && '' || '-rootless' }}
+        docker manifest push ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}:${{ inputs.version }}${{ matrix.user == 0 && '' || '-rootless' }}
     - name: Push latest
       if: ${{ inputs.latest }}
       run: |
