@@ -75,11 +75,8 @@ jobs:
     - name: Set image user
       if: ${{ matrix.user != 0 }}
       run: |
-        docker save ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} | podman load
-        docker image rm ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
-        podman create --name rootless ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
-        podman tag $(podman commit --format docker --change 'USER 65534' rootless | tail -1) ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
-        podman save ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} | docker load
+        docker create --name rootless ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
+        docker tag $(docker commit --format docker --change 'USER 65534' rootless | tail -1) ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
     - name: Push images
       if: ${{ ! inputs.latest }}
       run: |
