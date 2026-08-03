@@ -77,7 +77,8 @@ jobs:
       run: |
         docker save ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} | podman load
         podman create --name rootless ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
-        podman save $(podman commit --change 'USER 65534' rootless | tail -1) | docker load
+        podman tag $(podman commit --change 'USER 65534' rootless | tail -1) ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}
+        podman save ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} | docker load
     - name: Push images
       if: ${{ ! inputs.latest }}
       run: |
