@@ -75,8 +75,8 @@ jobs:
     - name: Set image user
       if: ${{ matrix.user != 0 }}
       run: |
-        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} rootless
-        echo -e "FROM rootless\nUSER 65534" | docker build -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} -
+        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} local/rootless
+        echo -e "FROM local/rootless\nUSER 65534" | docker build -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} -
     - name: Push images
       if: ${{ ! inputs.latest }}
       run: |
