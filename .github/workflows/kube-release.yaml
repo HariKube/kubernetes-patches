@@ -75,8 +75,8 @@ jobs:
     - name: Set image user
       if: ${{ matrix.user != 0 }}
       run: |
-        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} local/rootless:${{ inputs.version }}
-        echo -e "ARG BASE\nFROM \${BASE}\nUSER 65534" | docker buildx build --builder default --pull=false --load --build-arg BASE=local/rootless:${{ inputs.version }} -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} -
+        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} rootless:${{ inputs.version }}
+        docker buildx build --build-arg BASE=rootless:${{ inputs.version }} -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} -f Dockerfile.rootless .
     - name: Push images
       if: ${{ ! inputs.latest }}
       run: |
