@@ -75,8 +75,7 @@ jobs:
     - name: Set image user
       if: ${{ matrix.user != 0 }}
       run: |
-        echo "${{ secrets.REGISTRY_TOKEN }}" | docker login quay.io -u "${{ vars.REGISTRY_USER }}" --password-stdin
-        echo -e "FROM ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}\nUSER 65534" | docker build -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} -
+        echo -e "FROM docker-image://${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }}\nUSER 65534" | docker build -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} -
     - name: Push images
       if: ${{ ! inputs.latest }}
       run: |
