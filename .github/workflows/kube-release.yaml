@@ -61,6 +61,9 @@ jobs:
         sed -i 's~$(kube::util::host_arch)~${{ matrix.arch }}~' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
         sed -i 's~$(kube::golang::server_image_targets)~staging/src/k8s.io/component-base/logs/kube-log-runner cmd/${{ matrix.what }} cmd/kubectl~' ${{ github.workspace }}/kubernetes/hack/lib/golang.sh
         sed -i 's~$(kube::build::get_docker_wrapped_binaries)~"${{ matrix.what }},${'$(echo -n ${{ matrix.what }} | tr "a-z-" "A-Z_")'_BASE_IMAGE}"~' ${{ github.workspace }}/kubernetes/build/lib/release.sh
+    - name: Set image user
+      if: ${{ matrix.user != 0 }}
+      run: sed -i 's/USER 0/USER 65543/' Dockerfile
     - name: Build Kubernetes images
       run: make -C kubernetes release-images
       env:
@@ -72,11 +75,6 @@ jobs:
         KUBE_DOCKER_REGISTRY: ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}
         KUBE_APISERVER_BASE_IMAGE: registry.access.redhat.com/ubi9/ubi-micro:latest
         KUBE_CONTROLLER_MANAGER_BASE_IMAGE: registry.access.redhat.com/ubi9/ubi-micro:latest
-    - name: Set image user
-      if: ${{ matrix.user != 0 }}
-      run: |
-        docker tag ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} rootless:${{ inputs.version }}
-        docker buildx build --build-arg BASE=rootless:${{ inputs.version }} -t ${{ vars.REGISTRY }}/${{ vars.REPOSITORY }}/${{ matrix.what }}-${{ matrix.arch }}:${{ inputs.version }} -f Dockerfile.rootless .
     - name: Push images
       if: ${{ ! inputs.latest }}
       run: |
