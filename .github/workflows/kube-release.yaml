@@ -63,7 +63,9 @@ jobs:
         sed -i 's~$(kube::build::get_docker_wrapped_binaries)~"${{ matrix.what }},${'$(echo -n ${{ matrix.what }} | tr "a-z-" "A-Z_")'_BASE_IMAGE}"~' ${{ github.workspace }}/kubernetes/build/lib/release.sh
     - name: Set image user
       if: ${{ matrix.user != 0 }}
-      run: sed -i 's/USER 0/USER 65543/' Dockerfile
+      run: |
+        sed -i 's/USER 0/USER 65543/' ${{ github.workspace }}/kubernetes/build/server-image/Dockerfile
+        sed -i 's/USER 0/USER 65543/' ${{ github.workspace }}/kubernetes/build/server-image/kube-apiserver/Dockerfile
     - name: Build Kubernetes images
       run: make -C kubernetes release-images
       env:
